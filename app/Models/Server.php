@@ -485,6 +485,15 @@ class Server extends AbstractModel
         return $this->service('monitoring', $version);
     }
 
+    public function messageQueue(?string $version = null): ?Service
+    {
+        if ($version === null || $version === '' || $version === '0') {
+            return $this->defaultService('message_queue');
+        }
+
+        return $this->service('message_queue', $version);
+    }
+
     /**
      * @return array<string, string>
      */
