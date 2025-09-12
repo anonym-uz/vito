@@ -2,7 +2,11 @@ USER_TO_LINK='{{ $username }}'
 DB_NAME='{{ $database }}'
 DB_VERSION='{{ $version }}'
 
-# First grant CONNECT privilege to allow the user to connect to this specific database
+# First revoke PUBLIC access if not already done
+sudo -u postgres psql -c "REVOKE CONNECT ON DATABASE \"$DB_NAME\" FROM PUBLIC;" 2>/dev/null || true
+sudo -u postgres psql -c "REVOKE ALL ON DATABASE \"$DB_NAME\" FROM PUBLIC;" 2>/dev/null || true
+
+# Grant CONNECT privilege to allow the user to connect to this specific database
 if ! sudo -u postgres psql -c "GRANT CONNECT ON DATABASE \"$DB_NAME\" TO $USER_TO_LINK;"; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
