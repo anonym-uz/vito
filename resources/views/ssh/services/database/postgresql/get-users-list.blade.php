@@ -6,13 +6,11 @@ if ! sudo -u postgres psql -c "WITH user_databases AS (
     CROSS JOIN pg_database d
     WHERE r.rolcanlogin 
       AND d.datistemplate = false
+      AND d.datacl IS NOT NULL
       AND (
-          -- Check if user has explicit CONNECT grant in the database ACL
-          d.datacl::text LIKE '%' || r.rolname || '=c/%' 
-          -- Or check if user has other privileges (which implies CONNECT)
-          OR d.datacl::text LIKE '%' || r.rolname || '=C/%'
-          OR d.datacl::text LIKE '%' || r.rolname || '=T/%'
-          OR d.datacl::text LIKE '%' || r.rolname || '=CTc/%'
+          -- Check for any explicit grant to this user in the ACL
+          -- PostgreSQL ACL format: username=privileges/grantor
+          d.datacl::text ~ (r.rolname || '=[^/]*/')
       )
 )
 SELECT 
