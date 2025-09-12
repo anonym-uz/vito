@@ -1,0 +1,9 @@
+  # Fix template1 first (so new databases don't have this issue)
+  sudo -u postgres psql -c "REVOKE CONNECT ON DATABASE template1 FROM PUBLIC;"
+
+  # Fix all existing databases
+  for DB in $(sudo -u postgres psql -t -c "SELECT datname FROM pg_database 
+  WHERE datistemplate = false;"); do
+    sudo -u postgres psql -c "REVOKE CONNECT ON DATABASE \"$DB\" FROM PUBLIC;"
+    sudo -u postgres psql -c "GRANT CONNECT ON DATABASE \"$DB\" TO postgres;"
+  done
