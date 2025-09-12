@@ -2,6 +2,12 @@ USER_TO_LINK='{{ $username }}'
 DB_NAME='{{ $database }}'
 DB_VERSION='{{ $version }}'
 
+# First grant CONNECT privilege to allow the user to connect to this specific database
+if ! sudo -u postgres psql -c "GRANT CONNECT ON DATABASE \"$DB_NAME\" TO $USER_TO_LINK;"; then
+    echo 'VITO_SSH_ERROR' && exit 1
+fi
+
+# Then grant all other privileges on the database
 if ! sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE \"$DB_NAME\" TO $USER_TO_LINK;"; then
     echo 'VITO_SSH_ERROR' && exit 1
 fi
