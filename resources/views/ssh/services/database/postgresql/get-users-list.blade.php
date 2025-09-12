@@ -1,34 +1,27 @@
-# Query based on explicit ACL entries only
-# This ignores inherited permissions and only shows explicitly granted access
-if ! sudo -u postgres psql -c "WITH user_databases AS (
-    SELECT DISTINCT
-        r.rolname,
-        d.datname
-    FROM pg_roles r
-    CROSS JOIN pg_database d
-    WHERE r.rolcanlogin 
-      AND d.datistemplate = false
-      AND (
-          -- Check if ACL contains an entry for this specific user
-          -- PostgreSQL ACL format: grantee=privileges/grantor
-          CASE 
-              WHEN d.datacl IS NULL THEN 
-                  -- NULL ACL means default permissions (owner has all, PUBLIC has CONNECT)
-                  d.datdba = r.oid
-              ELSE
-                  -- Check if user appears in the ACL with any privileges
-                  array_to_string(d.datacl, ',') ~ (r.rolname || '=[^/]+/')
-          END
-      )
-)
-SELECT 
+if ! sudo -u postgres psql -c "SELECT 
     r.rolname AS username,
     '' AS host,
-    COALESCE(STRING_AGG(ud.datname, ',' ORDER BY ud.datname), '') AS databases
+    STRING_AGG(
+        CASE 
+            WHEN has_database_privilege(r.rolname, d.datname, 'CONNECT') 
+                 AND d.datname NOT IN ('template0', 'template1')
+            THEN d.datname 
+            ELSE NULL 
+        END, ',' ORDER BY d.datname
+    ) AS databases
 FROM pg_roles r
-LEFT JOIN user_databases ud ON r.rolname = ud.rolname
-WHERE r.rolcanlogin
+CROSS JOIN pg_database d
+WHERE r.rolcanlogin 
+  AND d.datistemplate = false
 GROUP BY r.rolname
+HAVING STRING_AGG(
+    CASE 
+        WHEN has_database_privilege(r.rolname, d.datname, 'CONNECT') 
+             AND d.datname NOT IN ('template0', 'template1')
+        THEN d.datname 
+        ELSE NULL 
+    END, ',' ORDER BY d.datname
+) IS NOT NULL
 ORDER BY r.rolname;";
 then
     echo 'VITO_SSH_ERROR' && exit 1
