@@ -1,3 +1,23 @@
+# First, let's debug by showing the raw ACL data
+echo "=== DEBUG: Raw database ACL data ===" >&2
+sudo -u postgres psql -c "SELECT datname, datacl FROM pg_database WHERE datistemplate = false;" >&2
+
+echo "=== DEBUG: Checking has_database_privilege for each user-database pair ===" >&2
+sudo -u postgres psql -c "
+SELECT 
+    r.rolname,
+    d.datname,
+    has_database_privilege(r.rolname, d.datname, 'CONNECT') as has_connect,
+    d.datacl::text as acl_text
+FROM pg_roles r
+CROSS JOIN pg_database d
+WHERE r.rolcanlogin 
+  AND d.datistemplate = false
+ORDER BY r.rolname, d.datname;" >&2
+
+echo "=== DEBUG: Running actual query ===" >&2
+
+# The actual query for getting user list
 if ! sudo -u postgres psql -c "WITH user_databases AS (
     SELECT 
         r.rolname,
