@@ -7,7 +7,6 @@ use App\Services\Database\Mariadb;
 use App\Services\Database\Mysql;
 use App\Services\Database\Postgresql;
 use App\Services\Firewall\Ufw;
-use App\Services\MessageQueue\RabbitMQ;
 use App\Services\Monitoring\RemoteMonitor\RemoteMonitor;
 use App\Services\Monitoring\VitoAgent\VitoAgent;
 use App\Services\NodeJS\NodeJS;
@@ -27,7 +26,6 @@ class ServiceTypeServiceProvider extends ServiceProvider
         $this->webservers();
         $this->databases();
         $this->memoryDatabases();
-        $this->messageQueues();
         $this->firewalls();
         $this->processManagers();
         $this->monitoring();
@@ -94,15 +92,6 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->type(Redis::type())
             ->label('Redis')
             ->handler(Redis::class)
-            ->register();
-    }
-
-    private function messageQueues(): void
-    {
-        RegisterServiceType::make(RabbitMQ::id())
-            ->type(RabbitMQ::type())
-            ->label('RabbitMQ')
-            ->handler(RabbitMQ::class)
             ->register();
     }
 
