@@ -103,6 +103,8 @@ class SSH
      */
     public function exec(string|View $command, string $log = '', ?int $siteId = null, ?bool $stream = false, ?callable $streamCallback = null): string
     {
+        logger()->info((string) $command);
+
         if (! $this->log instanceof ServerLog && $log) {
             $this->log = ServerLog::newLog($this->server, $log);
             if ($siteId !== null && $siteId !== 0) {
@@ -122,7 +124,6 @@ class SSH
         try {
             if ($this->asUser !== null && $this->asUser !== '' && $this->asUser !== '0') {
                 $command = base64_encode((string) $command);
-                logger()->info((string) $command);
                 $command = "sudo su - {$this->asUser} -c 'bash -c \"echo {$command} | base64 -d | bash\"'";
             }
 
