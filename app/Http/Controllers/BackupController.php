@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Database\ManageBackup;
-use App\Actions\Database\RunBackup;
+use App\Actions\Backup\ManageBackup;
+use App\Actions\Backup\RunBackup;
 use App\Http\Resources\BackupFileResource;
 use App\Http\Resources\BackupResource;
 use App\Models\Backup;
@@ -21,7 +21,7 @@ use Spatie\RouteAttributes\Attributes\Patch;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 
-#[Prefix('servers/{server}/database/backups')]
+#[Prefix('servers/{server}/backups')]
 #[Middleware(['auth', 'has-project'])]
 class BackupController extends Controller
 {

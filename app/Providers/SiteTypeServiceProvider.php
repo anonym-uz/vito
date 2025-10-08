@@ -54,7 +54,7 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('web_directory')
                     ->text()
                     ->label('Web Directory')
-                    ->placeholder('For / leave empty')
+                    ->placeholder('e.g., public, www, dist (leave empty for root)')
                     ->description('The relative path of your website from /home/vito/your-domain/'),
                 DynamicField::make('composer')
                     ->checkbox()
@@ -76,7 +76,7 @@ class SiteTypeServiceProvider extends ServiceProvider
                 DynamicField::make('web_directory')
                     ->text()
                     ->label('Web Directory')
-                    ->placeholder('For / leave empty')
+                    ->placeholder('e.g., public, www, dist (leave empty for root)')
                     ->description('The relative path of your website from /home/vito/your-domain/'),
             ]))
             ->register();
@@ -98,7 +98,7 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->text()
                     ->label('Web Directory')
                     ->default('public')
-                    ->placeholder('For / leave empty')
+                    ->placeholder('e.g., public, www, dist (leave empty for root)')
                     ->description('The relative path of your website from /home/vito/your-domain/'),
                 DynamicField::make('repository')
                     ->text()
@@ -169,9 +169,9 @@ class SiteTypeServiceProvider extends ServiceProvider
                     ->select()
                     ->label('Load Balancing Method')
                     ->options([
-                        LoadBalancerMethod::IP_HASH,
-                        LoadBalancerMethod::ROUND_ROBIN,
-                        LoadBalancerMethod::LEAST_CONNECTIONS,
+                        LoadBalancerMethod::IP_HASH->value,
+                        LoadBalancerMethod::ROUND_ROBIN->value,
+                        LoadBalancerMethod::LEAST_CONNECTIONS->value,
                     ]),
             ]))
             ->register();

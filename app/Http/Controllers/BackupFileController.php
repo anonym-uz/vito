@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Database\RestoreBackup;
+use App\Actions\Backup\RestoreBackup;
 use App\Http\Resources\BackupFileResource;
 use App\Http\Resources\BackupResource;
 use App\Models\Backup;
@@ -18,7 +18,7 @@ use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Prefix;
 
-#[Prefix('servers/{server}/database/backups/{backup}/files')]
+#[Prefix('servers/{server}/backups/{backup}/files')]
 #[Middleware(['auth', 'has-project'])]
 class BackupFileController extends Controller
 {

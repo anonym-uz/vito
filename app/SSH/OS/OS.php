@@ -360,4 +360,34 @@ class OS
     {
         return $this->server->ssh($user)->exec('mkdir -p '.$path);
     }
+
+    /**
+     * @throws SSHError
+     */
+    public function compress(string $sourcePath, string $zipPath): void
+    {
+        $this->server->ssh()->exec(
+            view('ssh.os.compress', [
+                'sourcePath' => $sourcePath,
+                'zipPath' => $zipPath,
+            ]),
+            'compress'
+        );
+    }
+
+    /**
+     * @throws SSHError
+     */
+    public function extractArchive(string $backupPath, string $restorePath, ?string $owner = null, ?string $permissions = null): void
+    {
+        $this->server->ssh()->exec(
+            view('ssh.os.extract-archive', [
+                'backupPath' => $backupPath,
+                'restorePath' => $restorePath,
+                'owner' => $owner,
+                'permissions' => $permissions,
+            ]),
+            'extract-archive'
+        );
+    }
 }

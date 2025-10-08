@@ -13,12 +13,14 @@ interface Database extends ServiceInterface
 
     public function createUser(string $username, string $password, string $host): void;
 
+    public function updateUser(string $username, string $host, ?string $newPassword = null, ?string $newHost = null): void;
+
     public function deleteUser(string $username, string $host): void;
 
     /**
      * @param  array<string>  $databases
      */
-    public function link(string $username, string $host, array $databases): void;
+    public function link(string $username, string $host, array $databases, string $permission = 'admin'): void;
 
     public function unlink(string $username, string $host): void;
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Actions\Server\CheckConnection;
+use App\Enums\OperatingSystem;
 use App\Enums\ServerStatus;
 use App\Enums\ServiceStatus;
 use App\Exceptions\SSHError;
@@ -18,7 +19,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +35,7 @@ use Throwable;
  * @property string $ip
  * @property ?string $local_ip
  * @property int $port
- * @property string $os
+ * @property OperatingSystem $os
  * @property string $type
  * @property array<string, mixed> $type_data
  * @property string $provider
@@ -43,7 +43,7 @@ use Throwable;
  * @property array<string, mixed> $provider_data
  * @property array<string, mixed> $authentication
  * @property string $public_key
- * @property string $status
+ * @property ServerStatus $status
  * @property bool $auto_update
  * @property int|float $progress
  * @property ?string $progress_step
@@ -60,7 +60,6 @@ use Throwable;
  * @property Collection<int, Worker> $queues
  * @property Collection<int, Backup> $backups
  * @property Collection<int, SshKey> $sshKeys
- * @property Collection<int, Tag> $tags
  * @property string $hostname
  * @property int $updates
  * @property ?Carbon $last_update_check
@@ -104,6 +103,8 @@ class Server extends AbstractModel
         'updates' => 'integer',
         'last_update_check' => 'datetime',
         'feature_data' => 'json',
+        'os' => OperatingSystem::class,
+        'status' => ServerStatus::class,
     ];
 
     protected $hidden = [
@@ -151,17 +152,6 @@ class Server extends AbstractModel
             }
         });
     }
-
-    /**
-     * @var array<string, string>
-     */
-    public static array $statusColors = [
-        ServerStatus::READY => 'success',
-        ServerStatus::INSTALLING => 'warning',
-        ServerStatus::DISCONNECTED => 'gray',
-        ServerStatus::INSTALLATION_FAILED => 'danger',
-        ServerStatus::UPDATING => 'warning',
-    ];
 
     public function isReady(): bool
     {
@@ -298,14 +288,6 @@ class Server extends AbstractModel
         return $this->belongsToMany(SshKey::class, 'server_ssh_keys')
             ->withPivot('status')
             ->withTimestamps();
-    }
-
-    /**
-     * @return MorphToMany<Tag, covariant $this>
-     */
-    public function tags(): MorphToMany
-    {
-        return $this->morphToMany(Tag::class, 'taggable');
     }
 
     public function getSshUser(): string
@@ -553,15 +535,6 @@ class Server extends AbstractModel
             Storage::disk($disk)->path(basename($path)),
             $path
         );
-    }
-
-    public function getStatusColor(): string
-    {
-        if (isset(self::$statusColors[$this->status])) {
-            return self::$statusColors[$this->status];
-        }
-
-        return 'gray';
     }
 
     /**

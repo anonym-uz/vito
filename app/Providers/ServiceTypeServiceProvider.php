@@ -39,6 +39,13 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->type(Nginx::type())
             ->label('Nginx')
             ->handler(Nginx::class)
+            ->configPaths([
+                [
+                    'name' => 'nginx.conf',
+                    'path' => '/etc/nginx/nginx.conf',
+                    'sudo' => true,
+                ],
+            ])
             ->register();
 
         RegisterServiceType::make(Caddy::id())
@@ -58,6 +65,13 @@ class ServiceTypeServiceProvider extends ServiceProvider
                 '8.4',
                 '8.0',
             ])
+            ->configPaths([
+                [
+                    'name' => 'my.cnf',
+                    'path' => '/etc/mysql/my.cnf',
+                    'sudo' => true,
+                ],
+            ])
             ->register();
         RegisterServiceType::make(Postgresql::id())
             ->type(Postgresql::type())
@@ -71,6 +85,13 @@ class ServiceTypeServiceProvider extends ServiceProvider
                 '13',
                 '12',
             ])
+            ->configPaths([
+                [
+                    'name' => 'postgresql.conf',
+                    'path' => '/etc/postgresql/{version}/main/postgresql.conf',
+                    'sudo' => true,
+                ],
+            ])
             ->register();
         RegisterServiceType::make(Mariadb::id())
             ->type(Mariadb::type())
@@ -83,6 +104,13 @@ class ServiceTypeServiceProvider extends ServiceProvider
                 '10.4',
                 '10.3',
             ])
+            ->configPaths([
+                [
+                    'name' => 'my.cnf',
+                    'path' => '/etc/mysql/my.cnf',
+                    'sudo' => true,
+                ],
+            ])
             ->register();
     }
 
@@ -92,6 +120,13 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->type(Redis::type())
             ->label('Redis')
             ->handler(Redis::class)
+            ->configPaths([
+                [
+                    'name' => 'redis.conf',
+                    'path' => '/etc/redis/redis.conf',
+                    'sudo' => true,
+                ],
+            ])
             ->register();
     }
 
@@ -110,6 +145,13 @@ class ServiceTypeServiceProvider extends ServiceProvider
             ->type(Supervisor::type())
             ->label('Supervisor')
             ->handler(Supervisor::class)
+            ->configPaths([
+                [
+                    'name' => 'supervisord.conf',
+                    'path' => '/etc/supervisor/supervisord.conf',
+                    'sudo' => true,
+                ],
+            ])
             ->register();
     }
 

@@ -5,11 +5,10 @@ namespace App\Models;
 use App\Enums\UserRole;
 use App\Traits\HasTimezoneTimestamps;
 use Carbon\Carbon;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -36,19 +35,17 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $profile_photo_url
  * @property string $timezone
  * @property ?int $current_project_id
+ * @property bool $is_admin
  * @property ?Project $currentProject
  * @property Collection<int, Project> $projects
- * @property string $role
+ * @property UserRole $role
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
 class User extends Authenticatable
 {
     use HasApiTokens;
-
-    /** @use HasFactory<UserFactory> */
     use HasFactory;
-
     use HasTimezoneTimestamps;
     use Notifiable;
     use TwoFactorAuthenticatable;
@@ -59,6 +56,7 @@ class User extends Authenticatable
         'password',
         'timezone',
         'current_project_id',
+        'is_admin',
         'role',
     ];
 
@@ -67,6 +65,11 @@ class User extends Authenticatable
         'remember_token',
         'two_factor_recovery_codes',
         'two_factor_secret',
+    ];
+
+    protected $casts = [
+        'role' => UserRole::class,
+        'is_admin' => 'boolean',
     ];
 
     protected $appends = [];
@@ -127,25 +130,15 @@ class User extends Authenticatable
         return $this->hasOne(StorageProvider::class)->where('provider', $provider);
     }
 
-    /**
-     * @return Builder<Project>|BelongsToMany<Project, covariant $this>
-     */
-    public function allProjects(): Builder|BelongsToMany
+    public function allProjects(): Builder
     {
-        if ($this->isAdmin()) {
-            return Project::query();
-        }
-
-        return $this->projects();
+        return Project::query()
+            ->whereHas('users', fn (Builder $q) => $q->where('user_id', $this->id));
     }
 
-    /**
-     * @return BelongsToMany<Project, covariant $this>
-     */
-    public function projects(): BelongsToMany
+    public function projects(): HasManyThrough
     {
-        return $this->belongsToMany(Project::class, 'user_project')
-            ->withTimestamps();
+        return $this->hasManyThrough(Project::class, UserProject::class, 'user_id', 'id', 'id', 'project_id');
     }
 
     /**
@@ -156,7 +149,7 @@ class User extends Authenticatable
         return $this->HasOne(Project::class, 'id', 'current_project_id');
     }
 
-    public function createDefaultProject(): Project
+    public function ensureHasDefaultProject(): Project
     {
         /** @var ?Project $project */
         $project = $this->projects()->first();
@@ -166,7 +159,10 @@ class User extends Authenticatable
             $project->name = 'default';
             $project->save();
 
-            $project->users()->attach($this->id);
+            $project->users()->create([
+                'user_id' => $this->id,
+                'role' => UserRole::OWNER,
+            ]);
         }
 
         $this->current_project_id = $project->id;
@@ -175,9 +171,17 @@ class User extends Authenticatable
         return $project;
     }
 
+    public function hasRolesInProject(Project $project, array $roles): bool
+    {
+        return $project->users()
+            ->where('user_id', $this->id)
+            ->whereIn('role', $roles)
+            ->exists();
+    }
+
     public function isAdmin(): bool
     {
-        return $this->role === UserRole::ADMIN;
+        return $this->is_admin;
     }
 
     /**

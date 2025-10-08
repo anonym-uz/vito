@@ -9,6 +9,8 @@
 /vendor
 /storage/database.sqlite
 /storage/database-test.sqlite
+/storage/database.sqlite-journal
+/storage/database-test.sqlite-journal
 .env
 .env.backup
 .env.production
@@ -26,3 +28,8 @@ laradumps.yaml
 /storage/pail
 .nvmrc
 /app/Vito/Plugins
+.mcp.json
+CLAUDE.md
+AGENTS.md
+.cursor
+.github/copilot-instructions.md

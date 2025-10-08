@@ -19,7 +19,6 @@ import {
   RocketIcon,
   Settings2Icon,
   SignpostIcon,
-  TerminalSquareIcon,
   UsersIcon,
 } from 'lucide-react';
 import { ReactNode } from 'react';
@@ -70,12 +69,13 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
           href: route('database-users', { server: page.props.server.id }),
           icon: UsersIcon,
         },
-        {
-          title: 'Backups',
-          href: route('backups', { server: page.props.server.id }),
-          icon: CloudUploadIcon,
-        },
       ],
+    },
+    {
+      title: 'Backups',
+      href: route('backups', { server: page.props.server.id }),
+      icon: CloudUploadIcon,
+      isDisabled: isMenuDisabled,
     },
     {
       title: 'Sites',
@@ -118,6 +118,12 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
               icon: ListEndIcon,
               isDisabled: isMenuDisabled,
               hidden: !page.props.server.services['process_manager'],
+            },
+            {
+              title: 'CronJobs',
+              href: route('cronjobs.site', { server: page.props.server.id, site: site.id }),
+              icon: ClockIcon,
+              isDisabled: isMenuDisabled,
             },
             {
               title: 'Redirects',
@@ -180,12 +186,6 @@ export default function ServerLayout({ children }: { children: ReactNode }) {
       title: 'Monitoring',
       href: route('monitoring', { server: page.props.server.id }),
       icon: ChartLineIcon,
-      isDisabled: isMenuDisabled,
-    },
-    {
-      title: 'Console',
-      href: route('console', { server: page.props.server.id }),
-      icon: TerminalSquareIcon,
       isDisabled: isMenuDisabled,
     },
     {
