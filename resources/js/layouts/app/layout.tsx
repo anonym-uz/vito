@@ -8,6 +8,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CheckCircle2Icon, CircleXIcon, InfoIcon, TriangleAlertIcon } from 'lucide-react';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export default function Layout({
   children,
@@ -59,14 +60,16 @@ export default function Layout({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SidebarProvider defaultOpen={!!(secondNavItems && secondNavItems.length > 0)}>
-        <AppSidebar secondNavItems={secondNavItems} secondNavTitle={secondNavTitle} />
-        <SidebarInset>
-          <AppHeader />
-          <div className="flex flex-1 flex-col">{children}</div>
-          <Toaster richColors position="bottom-center" />
-        </SidebarInset>
-      </SidebarProvider>
+      <TooltipProvider>
+        <SidebarProvider defaultOpen={!!(secondNavItems && secondNavItems.length > 0)}>
+          <AppSidebar secondNavItems={secondNavItems} secondNavTitle={secondNavTitle} />
+          <SidebarInset>
+            <AppHeader />
+            <div className="flex flex-1 flex-col">{children}</div>
+            <Toaster richColors position="bottom-center" />
+          </SidebarInset>
+        </SidebarProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }

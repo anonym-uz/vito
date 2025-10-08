@@ -201,6 +201,7 @@ return [
         App\Providers\NotificationChannelServiceProvider::class,
         App\Providers\ServiceTypeServiceProvider::class,
         App\Providers\HorizonServiceProvider::class,
+        App\Providers\ScrambleServiceProvider::class,
     ],
 
     /*
@@ -218,7 +219,7 @@ return [
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
 
-    'version' => '3.8.0',
+    'version' => '3.11.1',
 
     'demo' => env('APP_DEMO', false),
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
@@ -20,11 +21,16 @@ return new class extends Migration
             $table->timestamps();
         });
         Project::all()->each(function (Project $project): void {
-            $project->users()->attach($project->user_id);
+            $project->users->each(function (User $user) use ($project): void {
+                $project->users()->updateOrCreate([
+                    'user_id' => $user->id,
+                ], [
+                    'role' => $user->is_admin ? UserRole::OWNER : UserRole::USER,
+                ]);
+            });
         });
         User::all()->each(function (User $user): void {
-            $user->current_project_id = $user->projects()->first()?->id;
-            $user->save();
+            $user->ensureHasDefaultProject();
         });
     }
 

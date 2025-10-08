@@ -45,7 +45,7 @@ class ServerController extends Controller
         return Inertia::render('servers/index', [
             'servers' => ServerResource::collection($servers),
             'public_key' => __('servers.create.public_key_text', ['public_key' => get_public_key_content()]),
-            'server_providers' => ServerProviderResource::collection(ServerProvider::getByProjectId($project->id)->get()),
+            'server_providers' => ServerProviderResource::collection(ServerProvider::getByProjectId($project->id, user())->get()),
         ]);
     }
 
@@ -110,8 +110,8 @@ class ServerController extends Controller
         $server->refresh();
 
         return back()
-            ->with($server->getStatusColor(), __('Server status is :status', [
-                'status' => $server->status,
+            ->with($server->status->getColor(), __('Server status is :status', [
+                'status' => $server->status->getText(),
             ]));
     }
 
@@ -151,6 +151,8 @@ class ServerController extends Controller
     #[Post('/{server}/transfer', name: 'servers.transfer')]
     public function transfer(Server $server, Request $request): RedirectResponse
     {
+        $this->authorize('delete', $server);
+
         $server = app(TransferServer::class)->transfer(user(), $server, $request->all());
 
         user()->update(['current_project_id' => $server->project_id]);

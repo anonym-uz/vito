@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Enums\UserRole;
-use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
@@ -21,7 +20,7 @@ class UserTest extends TestCase
             'name' => 'new user',
             'email' => 'newuser@example.com',
             'password' => 'password',
-            'role' => UserRole::USER,
+            'role' => UserRole::USER->value,
         ])
             ->assertSessionDoesntHaveErrors()
             ->assertRedirect(route('users'));
@@ -29,7 +28,7 @@ class UserTest extends TestCase
         $this->assertDatabaseHas('users', [
             'name' => 'new user',
             'email' => 'newuser@example.com',
-            'role' => UserRole::USER,
+            'is_admin' => false,
         ]);
     }
 
@@ -46,13 +45,13 @@ class UserTest extends TestCase
 
     public function test_must_be_admin_to_see_users_list(): void
     {
-        $this->user->role = UserRole::USER;
+        $this->user->is_admin = false;
         $this->user->save();
 
         $this->actingAs($this->user);
 
         $this->get(route('users'))
-            ->assertForbidden();
+            ->assertNotFound();
     }
 
     public function test_delete_user(): void
@@ -87,7 +86,7 @@ class UserTest extends TestCase
         $this->patch(route('users.update', $user), [
             'name' => 'new-name',
             'email' => 'newemail@example.com',
-            'role' => UserRole::ADMIN,
+            'role' => UserRole::ADMIN->value,
         ])
             ->assertRedirect(route('users'));
 
@@ -95,45 +94,7 @@ class UserTest extends TestCase
             'id' => $user->id,
             'name' => 'new-name',
             'email' => 'newemail@example.com',
-            'role' => UserRole::ADMIN,
-        ]);
-    }
-
-    public function test_add_user_to_project(): void
-    {
-        $this->actingAs($this->user);
-
-        $user = User::factory()->create();
-        $project = Project::factory()->create();
-
-        $this->post(route('users.projects.store', $user), [
-            'project' => $project->id,
-        ])
-            ->assertSessionDoesntHaveErrors()
-            ->assertRedirect(route('users'));
-
-        $this->assertDatabaseHas('user_project', [
-            'user_id' => $user->id,
-            'project_id' => $project->id,
-        ]);
-    }
-
-    public function test_remove_user_from_project(): void
-    {
-        $this->actingAs($this->user);
-
-        $user = User::factory()->create();
-        $project = Project::factory()->create();
-
-        $user->projects()->attach($project);
-
-        $this->delete(route('users.projects.destroy', [$user, $project]))
-            ->assertSessionDoesntHaveErrors()
-            ->assertRedirect(route('users'));
-
-        $this->assertDatabaseMissing('user_project', [
-            'user_id' => $user->id,
-            'project_id' => $project->id,
+            'is_admin' => true,
         ]);
     }
 }

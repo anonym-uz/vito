@@ -41,9 +41,10 @@ class SslTest extends TestCase
             'server' => $this->server->id,
             'site' => $this->site->id,
         ]), [
-            'type' => SslType::LETSENCRYPT,
+            'type' => SslType::LETSENCRYPT->value,
             'email' => 'ssl@example.com',
         ])
+            ->assertRedirect()
             ->assertSessionDoesntHaveErrors();
 
         $ssl = Ssl::query()->where('site_id', $this->site->id)->first();
@@ -70,7 +71,7 @@ class SslTest extends TestCase
             'server' => $this->server->id,
             'site' => $this->site->id,
         ]), [
-            'type' => SslType::LETSENCRYPT,
+            'type' => SslType::LETSENCRYPT->value,
             'email' => 'ssl@example.com',
             'aliases' => true,
         ])
@@ -95,7 +96,7 @@ class SslTest extends TestCase
             'server' => $this->server->id,
             'site' => $this->site->id,
         ]), [
-            'type' => SslType::CUSTOM,
+            'type' => SslType::CUSTOM->value,
             'certificate' => 'certificate',
             'private' => 'private',
             'expires_at' => now()->addYear()->format('Y-m-d'),

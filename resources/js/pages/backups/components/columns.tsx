@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Backup } from '@/types/backup';
 import EditBackup from '@/pages/backups/components/edit-backup';
+import CopyableBadge from '@/components/copyable-badge';
 
 function Delete({ backup }: { backup: Backup }) {
   const [open, setOpen] = useState(false);
@@ -40,12 +41,12 @@ function Delete({ backup }: { backup: Backup }) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete backup [{backup.database.name}]</DialogTitle>
+          <DialogTitle>Delete backup [{backup.type === 'database' ? backup.database?.name : backup.path}]</DialogTitle>
           <DialogDescription className="sr-only">Delete backup</DialogDescription>
         </DialogHeader>
         <p className="p-4">
-          Are you sure you want to this backup: <strong>{backup.database.name}</strong>? All backup files will be deleted and this action cannot be
-          undone.
+          Are you sure you want to delete this backup: <strong>{backup.type === 'database' ? backup.database?.name : backup.path}</strong>? All backup
+          files will be deleted and this action cannot be undone.
         </p>
         <DialogFooter>
           <DialogClose asChild>
@@ -64,12 +65,19 @@ function Delete({ backup }: { backup: Backup }) {
 
 export const columns: ColumnDef<Backup>[] = [
   {
-    accessorKey: 'database_id',
-    header: 'Database',
+    accessorKey: 'type',
+    header: 'Type',
+    enableColumnFilter: true,
+    enableSorting: true,
+  },
+  {
+    accessorKey: 'target',
+    header: 'Target',
     enableColumnFilter: true,
     enableSorting: true,
     cell: ({ row }) => {
-      return <span>{row.original.database.name}</span>;
+      const backup = row.original;
+      return <CopyableBadge text={backup.type === 'database' ? backup.database?.name : backup.path} tooltip />;
     },
   },
   {
