@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://github.com/user-attachments/assets/b06531f3-2066-436e-a0e3-0a5f1b7d5118" alt="VitoDeploy>
+    <img alt="VitoDeploy" src="https://github.com/user-attachments/assets/f477ab88-8e1c-474e-8238-bf5892b2840f">
     <p align="center">
         <a href="https://github.com/vitodeploy/vito/actions"><img alt="GitHub Workflow Status" src="https://github.com/vitodeploy/vito/workflows/tests/badge.svg"></a>
     </p>
@@ -32,6 +32,8 @@ bash <(curl -Ls https://raw.githubusercontent.com/vitodeploy/vito/3.x/scripts/in
 - API
 - Plugins
 - Export and Import
+- Workflows and Automations
+- Domains and DNS Management
 
 ## Useful Links
 

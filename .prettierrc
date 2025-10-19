@@ -17,7 +17,7 @@
   "overrides": [
     {
       "files": [
-        "*.blade.php"
+        "resources/**/*.blade.php"
       ],
       "options": {
         "parser": "blade",

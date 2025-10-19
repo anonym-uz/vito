@@ -12,7 +12,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('DROP INDEX IF EXISTS plugins_is_enabled_priority_index');
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('DROP INDEX IF EXISTS plugins_is_enabled_priority_index');
+        }
+
+        if (DB::getDriverName() === 'mysql') {
+            $indexes = DB::select("SHOW INDEXES FROM plugins WHERE Key_name = 'plugins_is_enabled_priority_index'");
+            if (! empty($indexes)) {
+                DB::statement('DROP INDEX plugins_is_enabled_priority_index ON plugins');
+            }
+        }
+
         Schema::table('cron_jobs', function (Blueprint $table) {
             $table->unsignedInteger('site_id')->nullable()->after('server_id');
         });

@@ -6,6 +6,7 @@ use App\Enums\ServerStatus;
 use App\Facades\Notifier;
 use App\Models\Project;
 use App\Models\Server;
+use App\Models\ServerProvider;
 use App\Models\User;
 use App\Notifications\ServerInstallationFailed;
 use App\ServerProviders\Custom;
@@ -29,6 +30,13 @@ class CreateServer
     public function create(User $creator, Project $project, array $input): Server
     {
         $this->validate($project, $input);
+
+        if ($input['provider'] != 'custom' && isset($input['server_provider'])) {
+            $provider = ServerProvider::query()->findOrFail($input['server_provider']);
+            if ($creator->cannot('view', $provider)) {
+                abort(403, 'You do not have permission to use this server provider.');
+            }
+        }
 
         $this->server = new Server([
             'project_id' => $project->id,
@@ -177,7 +185,9 @@ class CreateServer
     {
         $this->server->services()->forceDelete();
 
-        foreach ($input['services'] as $service) {
+        $services = $input['services'] ?? [];
+
+        foreach ($services as $service) {
             $this->server->services()->create([
                 'type' => $service['type'],
                 'name' => $service['name'],

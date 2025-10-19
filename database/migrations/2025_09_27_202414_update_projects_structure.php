@@ -16,7 +16,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('DROP INDEX IF EXISTS plugins_is_enabled_priority_index');
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('DROP INDEX IF EXISTS plugins_is_enabled_priority_index');
+        }
+
         Schema::table('user_project', function (Blueprint $table) {
             $table->unsignedBigInteger('user_id')->nullable()->change();
             $table->string('email')->after('id')->nullable();

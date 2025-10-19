@@ -198,10 +198,11 @@ return [
         App\Providers\ServerProviderServiceProvider::class,
         App\Providers\StorageProviderServiceProvider::class,
         App\Providers\SourceControlServiceProvider::class,
+        App\Providers\DNSProviderServiceProvider::class,
         App\Providers\NotificationChannelServiceProvider::class,
         App\Providers\ServiceTypeServiceProvider::class,
         App\Providers\HorizonServiceProvider::class,
-        App\Providers\ScrambleServiceProvider::class,
+        App\Providers\WorkflowServiceProvider::class,
     ],
 
     /*
@@ -219,7 +220,7 @@ return [
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
 
-    'version' => '3.11.1',
+    'version' => '3.13.0',
 
     'demo' => env('APP_DEMO', false),
 
