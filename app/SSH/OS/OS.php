@@ -55,13 +55,14 @@ class OS
     /**
      * @throws SSHError
      */
-    public function createUser(string $user, string $password, string $key): void
+    public function createUser(string $user, string $password, string $key, bool $clearKeys = false): void
     {
         $this->server->ssh()->exec(
             view('ssh.os.create-user', [
                 'user' => $user,
                 'password' => $password,
                 'key' => $key,
+                'clearKeys' => $clearKeys,
             ]),
             'create-user'
         );
@@ -105,16 +106,17 @@ class OS
         return $this->server->ssh()->exec(
             view('ssh.os.read-file', [
                 'path' => '/home/'.$user.'/.ssh/id_rsa.pub',
-            ])
+            ]),
+            'get-public-key'
         );
     }
 
     /**
      * @throws SSHError
      */
-    public function deploySSHKey(string $key): void
+    public function deploySSHKey(string $key, string $user): void
     {
-        $this->server->ssh()->exec(
+        $this->server->ssh($user)->exec(
             view('ssh.os.deploy-ssh-key', [
                 'key' => $key,
             ]),
@@ -125,12 +127,11 @@ class OS
     /**
      * @throws SSHError
      */
-    public function deleteSSHKey(string $key): void
+    public function deleteSSHKey(string $key, string $user): void
     {
-        $this->server->ssh()->exec(
+        $this->server->ssh($user)->exec(
             view('ssh.os.delete-ssh-key', [
                 'key' => $key,
-                'user' => $this->server->getSshUser(),
             ]),
             'delete-ssh-key'
         );
@@ -159,6 +160,7 @@ class OS
             view('ssh.os.read-ssh-key', [
                 'name' => $name,
             ]),
+            'read-ssh-key'
         );
     }
 
@@ -169,6 +171,7 @@ class OS
     {
         $this->server->ssh()->exec(
             view('ssh.os.reboot'),
+            'reboot'
         );
     }
 
@@ -269,7 +272,8 @@ class OS
             view('ssh.os.download', [
                 'url' => $url,
                 'path' => $path,
-            ])
+            ]),
+            'download'
         );
     }
 
@@ -349,7 +353,8 @@ class OS
         $this->server->ssh()->write(
             $path,
             $content,
-            $user
+            $user,
+            'write-file'
         );
     }
 

@@ -57,13 +57,6 @@ class HandleInertiaRequests extends Middleware
             return $this->share($request);
         }
 
-        // servers
-        $servers = [];
-        if ($user && $currentProject && $user->can('viewAny', [Server::class, $currentProject])) {
-            // TODO: limit servers
-            $servers = ServerResource::collection($currentProject->servers);
-        }
-
         $data = [];
         if ($request->route('server')) {
             /** @var Server $server */
@@ -98,12 +91,9 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => $user ? [
                 'user' => UserResource::make($user->load('projects')),
-                // TODO: limit projects
-                'projects' => ProjectResource::collection($user->projects()->get()),
                 'currentProject' => ProjectResource::make($currentProject),
             ] : null,
             'public_key_text' => __('servers.create.public_key_text', ['public_key' => get_public_key_content()]),
-            'project_servers' => $servers,
             'configs' => [
                 'operating_systems' => config('core.operating_systems'),
                 'colors' => config('core.colors'),

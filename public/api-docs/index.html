@@ -35,7 +35,7 @@
     <script src="/api-docs/swagger-ui/swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
     <script>
         const ui = SwaggerUIBundle({
-            url: '/api-docs/api.yaml',
+            url: '/api.yaml',
             dom_id: '#swagger-ui',
             deepLinking: true,
             presets: [
@@ -49,6 +49,9 @@
             tryItOutEnabled: true,
             requestInterceptor: (request) => {
                 // Add any custom request headers if needed
+                delete request.headers['accept']
+                delete request.headers['Accept']
+                request.headers["Accept"] = "application/json";
                 return request;
             }
         });

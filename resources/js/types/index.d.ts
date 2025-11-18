@@ -8,7 +8,6 @@ import { DynamicFieldConfig } from './dynamic-field-config';
 
 export interface Auth {
   user: User;
-  projects: Project[];
   currentProject?: Project;
 }
 
@@ -119,7 +118,6 @@ export interface SharedData {
   auth: Auth;
   ziggy: Config & { location: string };
   configs: Configs;
-  project_servers: Server[];
   server_sites?: Site[];
   server?: Server;
   site?: Site;

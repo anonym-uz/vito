@@ -3,9 +3,12 @@
 namespace Tests\Feature;
 
 use App\Enums\DeploymentStatus;
+use App\Enums\WorkerStatus;
 use App\Facades\SSH;
 use App\Models\Deployment;
 use App\Models\GitHook;
+use App\Models\Site;
+use App\Models\Worker;
 use App\Notifications\DeploymentCompleted;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -556,5 +559,136 @@ class ApplicationTest extends TestCase
                 true,
             ],
         ];
+    }
+
+    public function test_deploy_classic_restarts_only_site_workers(): void
+    {
+        $sshFake = SSH::fake('fake output');
+        Http::fake([
+            'github.com/*' => Http::response([
+                'sha' => '123',
+                'commit' => [
+                    'message' => 'test commit message',
+                    'name' => 'test commit name',
+                    'email' => 'test@example.com',
+                    'url' => 'https://github.com/commit-url',
+                ],
+            ]),
+        ]);
+        Notification::fake();
+
+        // Create a worker for the site being deployed
+        $siteWorker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => WorkerStatus::RUNNING,
+        ]);
+
+        // Create another site with workers on the same server
+        $otherSite = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+        $otherSiteWorker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $otherSite->id,
+            'status' => WorkerStatus::RUNNING,
+        ]);
+
+        // Enable restart workers for the deployment script
+        $this->site->deploymentScript->update([
+            'content' => 'git pull',
+            'configs' => ['restart_workers' => true],
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->post(route('application.deploy', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))
+            ->assertSessionDoesntHaveErrors();
+
+        // Verify that only the site worker restart command was executed
+        SSH::assertExecutedContains('supervisorctl restart '.$siteWorker->id.':*');
+
+        // Verify that other site's worker and "restart all" are not executed
+        $this->assertWorkerNotRestarted($otherSiteWorker->id);
+        SSH::assertNotExecutedContains('supervisorctl restart all', 'Should not restart all workers');
+    }
+
+    public function test_deploy_modern_restarts_only_site_workers(): void
+    {
+        $sshFake = SSH::fake('fake output');
+        Http::fake([
+            'github.com/*' => Http::response([
+                'sha' => '123',
+                'commit' => [
+                    'message' => 'test commit message',
+                    'name' => 'test commit name',
+                    'email' => 'test@example.com',
+                    'url' => 'https://github.com/commit-url',
+                ],
+            ]),
+        ]);
+        Notification::fake();
+
+        $this->site->update([
+            'type_data' => [
+                'modern_deployment' => true,
+                'modern_deployment_history' => 10,
+                'modern_deployment_shared_resources' => ['.env'],
+            ],
+        ]);
+        $this->site->ensureDeploymentScriptsExist();
+        $this->site->refresh();
+
+        // Create a worker for the site being deployed
+        $siteWorker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $this->site->id,
+            'status' => WorkerStatus::RUNNING,
+        ]);
+
+        // Create another site with workers on the same server
+        $otherSite = Site::factory()->create([
+            'server_id' => $this->server->id,
+        ]);
+        $otherSiteWorker = Worker::factory()->create([
+            'server_id' => $this->server->id,
+            'site_id' => $otherSite->id,
+            'status' => WorkerStatus::RUNNING,
+        ]);
+
+        // Enable restart workers for the pre-flight script
+        $this->site->preFlightScript->update([
+            'content' => 'php artisan migrate --force',
+            'configs' => ['restart_workers' => true],
+        ]);
+
+        $this->actingAs($this->user);
+
+        $this->post(route('application.deploy', [
+            'server' => $this->server,
+            'site' => $this->site,
+        ]))
+            ->assertSessionDoesntHaveErrors();
+
+        // Verify that only the site worker restart command was executed
+        SSH::assertExecutedContains('supervisorctl restart '.$siteWorker->id.':*');
+
+        // Verify that other site's worker and "restart all" are not executed
+        $this->assertWorkerNotRestarted($otherSiteWorker->id);
+        SSH::assertNotExecutedContains('supervisorctl restart all', 'Should not restart all workers');
+    }
+
+    /**
+     * Assert that the given worker's restart command was not executed via SSH.
+     */
+    private function assertWorkerNotRestarted(int|string $workerId): void
+    {
+        SSH::assertNotExecutedContains(
+            'supervisorctl restart '.$workerId.':*',
+            "Worker {$workerId} should not be restarted"
+        );
     }
 }
