@@ -169,6 +169,8 @@ export default function CreateSite({
             /*@ts-expect-error dynamic types*/
             onValueChange={(value) => form.setData('database', value)}
             createWithUser={true}
+            defaultCharset={field.componentProps?.defaultCharset as string | undefined}
+            defaultCollation={field.componentProps?.defaultCollation as string | undefined}
           />
           {/*@ts-expect-error dynamic types*/}
           <InputError message={form.errors.database} />
@@ -272,6 +274,11 @@ export default function CreateSite({
                     onValueChange={(value) => form.setData('aliases', value)}
                   />
                   <InputError message={form.errors.aliases} />
+                  {Object.keys(form.errors)
+                    .filter((key) => key.startsWith('aliases.'))
+                    .map((key) => (
+                      <InputError key={key} message={form.errors[key as keyof typeof form.errors] as string} />
+                    ))}
                 </FormField>
 
                 {page.props.configs.site.types[form.data.type].form?.map((config) => getFormField(config))}

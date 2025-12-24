@@ -1,5 +1,14 @@
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LoaderCircleIcon } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  LoaderCircleIcon,
+  ChevronsUpDownIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+} from 'lucide-react';
 import { router } from '@inertiajs/react';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -19,10 +28,14 @@ function SortIndicator({ sortKey }: { sortKey: string }) {
   const dir = params.get('sort_dir') || 'desc';
 
   if (current !== sortKey) {
-    return <span className="text-muted-foreground">↕</span>;
+    return <ChevronsUpDownIcon className="text-muted-foreground inline-block h-4 w-4" />;
   }
 
-  return <span className="text-muted-foreground">{dir === 'asc' ? '↑' : '↓'}</span>;
+  return dir === 'asc' ? (
+    <ChevronUpIcon className="text-muted-foreground inline-block h-4 w-4" />
+  ) : (
+    <ChevronDownIcon className="text-muted-foreground inline-block h-4 w-4" />
+  );
 }
 
 interface DataTableProps<TData, TValue> {
