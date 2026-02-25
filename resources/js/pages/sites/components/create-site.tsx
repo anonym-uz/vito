@@ -4,7 +4,9 @@ import { Form, FormField, FormFields } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, HelpCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useForm, usePage } from '@inertiajs/react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/ui/input-error';
@@ -273,6 +275,7 @@ export default function CreateSite({
                     placeholder="Add aliases"
                     onValueChange={(value) => form.setData('aliases', value)}
                   />
+                  <p className="text-muted-foreground text-xs">Press enter or comma to add an alias and press backspace to remove the last alias.</p>
                   <InputError message={form.errors.aliases} />
                   {Object.keys(form.errors)
                     .filter((key) => key.startsWith('aliases.'))
@@ -281,19 +284,46 @@ export default function CreateSite({
                     ))}
                 </FormField>
 
-                {page.props.configs.site.types[form.data.type].form?.map((config) => getFormField(config))}
-
                 <FormField>
-                  <Label htmlFor="user">Isolated User (Optional)</Label>
+                  <Label htmlFor="user" className="flex items-center gap-1">
+                    Isolated User
+                    <Dialog>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <DialogTrigger asChild>
+                              <button type="button" className="text-muted-foreground hover:text-foreground">
+                                <HelpCircle className="h-4 w-4" />
+                              </button>
+                            </DialogTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent>Why?</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Why Isolated Users?</DialogTitle>
+                          <DialogDescription>
+                            Isolated users are mandatory to ensure security for your sites. If a site has security vulnerabilities and gets
+                            compromised, the attacker cannot take full control of the server because the site runs under its own isolated user with
+                            limited permissions.
+                          </DialogDescription>
+                        </DialogHeader>
+                      </DialogContent>
+                    </Dialog>
+                  </Label>
                   <Input
                     id="user"
                     type="text"
                     value={form.data.user}
                     onChange={(e) => form.setData('user', e.target.value)}
-                    placeholder="Leave empty for using server's default user"
+                    placeholder="e.g. mysite"
                   />
+                  <p className="text-muted-foreground text-xs">The isolated user for the site. Must be unique on the server.</p>
                   <InputError message={form.errors.user} />
                 </FormField>
+
+                {page.props.configs.site.types[form.data.type].form?.map((config) => getFormField(config))}
               </>
             )}
           </FormFields>
